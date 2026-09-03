@@ -27,39 +27,73 @@ graphs, canonical forms, and the derived coloured-graph isomorphism test.
 
 {docstring NautyFFI.CanonResult}
 
-# Canonical labelling and isomorphism
+# The Petersen graph in two presentations
 
-The following three-vertex paths differ only by a vertex relabelling. Calling
-`canonicalize` produces the canonical form; `findIso` returns a forward vertex
-transporter; and `isIso` performs the corresponding Boolean test.
+The Petersen graph is a useful first nontrivial example. The first graph below
+is the generalized Petersen presentation `G(5, 2)`: an outer pentagon `0..4`,
+an inner five-point star `5..9`, and five spokes. The second is the Kneser
+presentation `K(5, 2)`, whose vertices are the two-element subsets
+`01 02 03 04 12 13 14 23 24 34` of a five-element set and whose edges join
+disjoint subsets.
 
 ```lean
 open NautyFFI
 
-def path : Graph where
-  colorCount := 1
-  colors := #[0, 0, 0]
-  adjacency := #[
-    #[false, true, false],
-    #[true, false, true],
-    #[false, true, false]
-  ]
+namespace NautyFFIManualExample
 
-def relabelledPath : Graph where
-  colorCount := 1
-  colors := #[0, 0, 0]
-  adjacency := #[
-    #[false, false, true],
-    #[false, false, true],
-    #[true, true, false]
-  ]
+def oneColorGraph (vertexCount : Nat)
+    (edges : Array (Nat × Nat)) : Graph where
+  colorCount := if vertexCount = 0 then 0 else 1
+  colors := Array.replicate vertexCount 0
+  adjacency := Id.run do
+    let mut matrix := Array.replicate vertexCount
+      (Array.replicate vertexCount false)
+    for (u, v) in edges do
+      matrix := matrix.set! u (matrix[u]!.set! v true)
+      matrix := matrix.set! v (matrix[v]!.set! u true)
+    return matrix
 
-#eval canonicalize path
-#eval findIso path relabelledPath
-#eval isIso path relabelledPath
+def petersen : Graph := oneColorGraph 10
+  #[(0, 1), (1, 2), (2, 3), (3, 4), (0, 4),
+    (5, 7), (7, 9), (6, 9), (6, 8), (5, 8),
+    (0, 5), (1, 6), (2, 7), (3, 8), (4, 9)]
+
+def kneser52 : Graph := oneColorGraph 10
+  #[(0, 7), (0, 8), (0, 9), (1, 5), (1, 6),
+    (1, 9), (2, 4), (2, 6), (2, 8), (3, 4),
+    (3, 5), (3, 7), (4, 9), (5, 8), (6, 7)]
+
+def prism5 : Graph := oneColorGraph 10
+  #[(0, 1), (1, 2), (2, 3), (3, 4), (0, 4),
+    (5, 6), (6, 7), (7, 8), (8, 9), (5, 9),
+    (0, 5), (1, 6), (2, 7), (3, 8), (4, 9)]
+
+-- Both presentations have the same canonical form.
+-- Their labellings show how each input was placed into it.
+#eval do
+  let p ← canonicalize petersen
+  let k ← canonicalize kneser52
+  pure (p.form == k.form, p.labelling, k.labelling)
+
+-- `transporter[i]` is the Kneser vertex corresponding to
+-- Petersen vertex `i`.
+#eval findIso petersen kneser52
+
+#eval isIso petersen kneser52
+
+-- The pentagonal prism is also cubic on ten vertices,
+-- but is not isomorphic to the Petersen graph.
+#eval isIso petersen prism5
+
+end NautyFFIManualExample
 ```
 
-The repository also builds this as a runnable example:
+The first result reports equal canonical forms and displays the two canonical
+labellings. `findIso` returns their derived forward transporter. The two
+Boolean calls distinguish the isomorphic presentations from the superficially
+similar prism.
+
+The repository builds the same comparison as a runnable example:
 
 ```
 lake exe nautyffi_example
