@@ -1,0 +1,26 @@
+name = "NautyFFIDocs"
+version = "0.1.0"
+reservoir = false
+packagesDir = "../.lake/packages"
+
+[[require]]
+scope = "leanprover"
+name = "doc-gen4"
+rev = "v4.34.0-rc2"
+
+[[require]]
+name = "verso"
+git = "https://github.com/leanprover/verso.git"
+rev = "v4.34.0-rc2"
+
+[[require]]
+name = "NautyFFI"
+path = "../"
+
+[[lean_lib]]
+name = "NautyFFIManual"
+
+[[lean_exe]]
+name = "nautyffi_manual"
+root = "Main"
+supportInterpreter = true
