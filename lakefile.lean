@@ -45,3 +45,5 @@ lean_lib NautyFFI where
 lean_exe nautyffi_tests where
   root := `NautyFFI.Tests
 
+lean_exe nautyffi_example where
+  root := `NautyFFI.Example

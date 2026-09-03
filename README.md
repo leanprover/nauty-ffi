@@ -31,6 +31,18 @@ compiler in addition to the Lean toolchain. Linux and macOS are supported.
 
 The public API is intentionally small:
 
+```lean
+NautyFFI.canonicalize :
+  NautyFFI.Graph → Except String NautyFFI.CanonResult
+
+NautyFFI.findIso :
+  NautyFFI.Graph → NautyFFI.Graph →
+    Except String (Option (Array Nat))
+
+NautyFFI.isIso :
+  NautyFFI.Graph → NautyFFI.Graph → Except String Bool
+```
+
 - `NautyFFI.canonicalize` accepts a vertex-coloured undirected simple graph
   and returns nauty's canonical labelling together with its canonical form.
   The form consists of the ordered colour-cell sizes and the canonical
@@ -46,6 +58,27 @@ The binding uses dense nauty with the option set pinned by `hex-graph-iso`.
 Sparse nauty, Traces, digraphs, and automorphism-group output are out of scope.
 Coverage expands in lockstep with `hex-graph-iso`; this package does not run
 ahead of the verified library's surface.
+
+The [API reference](https://leanprover.github.io/nauty-ffi/api/) is generated
+with docgen4. A short [Verso manual](https://leanprover.github.io/nauty-ffi/manual/)
+introduces the data model and works through a complete example. The same
+example can be run locally with:
+
+```sh
+lake exe nautyffi_example
+```
+
+Documentation dependencies are isolated from the library in `docbuild`. To
+build both sites locally:
+
+```sh
+cd docbuild
+lake build NautyFFI:docs nautyffi_manual
+lake exe nautyffi_manual --output ../_out
+```
+
+The API reference is written to `docbuild/.lake/build/doc`; the manual is
+written to `_out/html-multi`.
 
 # Verification
 
@@ -83,6 +116,6 @@ code is also Apache-2.0 under the repository's root `LICENSE`.
 
 # Contributing
 
-This repository is a published mirror. Develop changes in
-[`leanprover/hex-dev`](https://github.com/kim-em/hex-dev), which is the source
-of truth, and use its release sync to publish them here.
+This is the canonical, standalone repository for `nauty-ffi`; develop changes
+and open pull requests here. `hex-dev` may pin this package for unverified
+in-process conformance testing, but it does not publish or own these sources.

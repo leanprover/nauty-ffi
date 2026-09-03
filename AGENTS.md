@@ -1,7 +1,7 @@
 # Development
 
-This repository is a published mirror. Its Lean source, native bridge,
-vendored nauty files, tests, README, and CI workflow are managed from
-[`leanprover/hex-dev`](https://github.com/kim-em/hex-dev). Make changes there
-and publish them with the release sync; do not edit managed files here.
+This is the canonical, standalone repository for `nauty-ffi`. Develop its
+Lean source, native bridge, vendored files, tests, documentation, and CI here.
 
+`hex-dev` may pin this package for unverified in-process conformance testing,
+but it does not publish or own this repository's sources.

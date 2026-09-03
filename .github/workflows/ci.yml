@@ -22,24 +22,33 @@ jobs:
         with:
           path: |
             .lake/build
-            .lake/packages/Hex*/.lake/build
-            .lake/packages/hex-test-kit/.lake/build
-          key: lake-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-${{ github.run_id }}-${{ github.run_attempt }}
+            .lake/packages/*/.lake/build
+            docbuild/.lake/build
+          key: lake-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'docbuild/lake-manifest.json') }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            lake-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-
-      - name: Build library and fixture tests
-        run: lake build NautyFFI nautyffi_tests
+            lake-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'docbuild/lake-manifest.json') }}-
+      - name: Build library, fixture tests, and example
+        run: lake build NautyFFI nautyffi_tests nautyffi_example
       - name: Run in-process fixture tests
         run: .lake/build/bin/nautyffi_tests
+      - name: Run example
+        run: .lake/build/bin/nautyffi_example
+      - name: Build API documentation and Verso manual
+        working-directory: docbuild
+        env:
+          DISABLE_EQUATIONS: 1
+        run: |
+          lake build NautyFFI:docs nautyffi_manual
+          lake exe nautyffi_manual --output ../_out
       - name: Save Lake build outputs
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && success()
         uses: actions/cache/save@v4
         with:
           path: |
             .lake/build
-            .lake/packages/Hex*/.lake/build
-            .lake/packages/hex-test-kit/.lake/build
-          key: lake-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-${{ github.run_id }}-${{ github.run_attempt }}
+            .lake/packages/*/.lake/build
+            docbuild/.lake/build
+          key: lake-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json', 'docbuild/lake-manifest.json') }}-${{ github.run_id }}-${{ github.run_attempt }}
   # nauty-ffi ships native code and explicitly supports macOS; this lane is
   # the cross-platform C compilation and runtime check.
   build-macos:
@@ -57,21 +66,19 @@ jobs:
         with:
           path: |
             .lake/build
-            .lake/packages/Hex*/.lake/build
-            .lake/packages/hex-test-kit/.lake/build
           key: lake-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
             lake-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-
-      - name: Build library and fixture tests
-        run: lake build NautyFFI nautyffi_tests
+      - name: Build library, fixture tests, and example
+        run: lake build NautyFFI nautyffi_tests nautyffi_example
       - name: Run in-process fixture tests
         run: .lake/build/bin/nautyffi_tests
+      - name: Run example
+        run: .lake/build/bin/nautyffi_example
       - name: Save Lake build outputs
         if: github.event_name == 'push' && github.ref == 'refs/heads/main' && success()
         uses: actions/cache/save@v4
         with:
           path: |
             .lake/build
-            .lake/packages/Hex*/.lake/build
-            .lake/packages/hex-test-kit/.lake/build
           key: lake-build-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-${{ github.run_id }}-${{ github.run_attempt }}
